@@ -1,6 +1,9 @@
 """
 Module for all xblock exception classes
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from webob import Response
 try:
     import simplejson as json   # pylint: disable=F0401
@@ -127,6 +130,7 @@ class JsonHandlerError(Exception):
             json.dumps({"error": self.message}),
             status_code=self.status_code,
             content_type="application/json",
+            charset="utf-8",
             **kwargs
         )
 

@@ -4,14 +4,17 @@
 Set up for XBlock
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import codecs
 import os.path
 from setuptools import setup
 
-version_file = os.path.join(os.path.dirname(__file__), 'xblock/VERSION.txt')
+VERSION_FILE = os.path.join(os.path.dirname(__file__), 'xblock/VERSION.txt')
 
 setup(
     name='XBlock',
-    version=open(version_file).read().strip(),
+    version=codecs.open(VERSION_FILE, encoding='ascii').read().strip(),
     description='XBlock Core Library',
     packages=[
         'xblock',
@@ -47,5 +50,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
     ]
 )
