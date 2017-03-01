@@ -36,9 +36,12 @@ class StubScorableBlock(scorable.ScorableXBlockMixin):
 
 
 class ScorableXBlockTestCase(TestCase):
+    """
+    Test scorable block behavior
+    """
     def test_rescore(self):
         block = StubScorableBlock(scorable.Score(earned=0.0, total=1.0))
-        block.rescore(only_if_higher=False)
+        self.assertTrue(block.rescore(only_if_higher=False))
         self.assertEqual(
             block.get_score(),
             scorable.Score(earned=1.6, total=2.0)
@@ -57,7 +60,7 @@ class ScorableXBlockTestCase(TestCase):
 
     def test_rescore_if_higher_with_higher(self):
         block = StubScorableBlock(scorable.Score(earned=0.0, total=1.0))
-        block.rescore(only_if_higher=True)
+        self.assertFalse(block.rescore(only_if_higher=True))
         self.assertEqual(
             block.get_score(),
             scorable.Score(earned=1.6, total=2.0)
@@ -65,7 +68,7 @@ class ScorableXBlockTestCase(TestCase):
 
     def test_rescore_if_higher_with_lower(self):
         block = StubScorableBlock(scorable.Score(earned=2.0, total=2.0))
-        block.rescore(only_if_higher=True)
+        self.assertTrue(block.rescore(only_if_higher=True))
         self.assertEqual(
             block.get_score(),
             scorable.Score(earned=2.0, total=2.0)

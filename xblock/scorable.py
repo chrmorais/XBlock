@@ -60,30 +60,45 @@ class ScorableXBlockMixin(object):
 
         try:
             new_score = self.calculate_score()
-        except:
+        except Exception:  # pylint: disable=broad-except
             self._publish_scoring_event('rescore_failure', {'failure': 'calculation error'})
             return False
 
         if not only_if_higher or new_score > original_score:
             self.set_score(new_score)
+            self._publish_grade(only_if_higher)
             self._publish_scoring_event(
                 'rescore_result',
                 {
                     'result': 'score updated',
-                    'original_score': original_score._asdict(),
-                    'new_score': new_score._asdict(),
-                }
-            )
-            return False
-        else:
-            self._publish_scoring_event(
-                'rescore_result', {
-                    'result': 'score not changed',
-                    'original_score': original_score._asdict(),
-                    'new_score': new_score._asdict(),
+                    'original_score': original_score._asdict(),  # pylint: disable=protected-access
+                    'new_score': new_score._asdict(),  # pylint: disable=protected-access
                 }
             )
             return True
+        else:
+            self._publish_scoring_event(
+                'rescore_result',
+                {
+                    'result': 'score not changed',
+                    'original_score': original_score._asdict(),  # pylint: disable=protected-access
+                    'new_score': new_score._asdict(),  # pylint: disable=protected-access
+                }
+            )
+            return False
+
+    def _publish_grade(self, only_if_higher=None):
+        """
+        Publish a grade to the runtime.
+        """
+        score = self.get_score()
+        grade_dict = {
+            'value': score.earned,
+            'max_value': score.total,
+        }
+        if only_if_higher is not None:
+            grade_dict['only_if_higher'] = only_if_higher
+        self.runtime.publish('grade', grade_dict)
 
     def _publish_scoring_event(self, name, data):
         """
