@@ -5,7 +5,11 @@ Scorable.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import namedtuple
+import logging
 import six
+
+
+log = logging.getLogger(__name__)
 
 
 Score = namedtuple('Score', ['earned', 'total'])
@@ -87,37 +91,6 @@ class ScorableXBlockMixin(object):
             )
             return False
 
-    def _publish_grade(self, only_if_higher=None):
-        """
-        Publish a grade to the runtime.
-        """
-        score = self.get_score()
-        grade_dict = {
-            'value': score.earned,
-            'max_value': score.total,
-        }
-        if only_if_higher is not None:
-            grade_dict['only_if_higher'] = only_if_higher
-        self.runtime.publish('grade', grade_dict)
-
-    def _publish_scoring_event(self, name, data):
-        """
-        Publish an event related to scoring.
-        """
-        logged = {}  # Ensure we don't mutate our arguments
-        logged.update(data)
-        logged.update(self._base_event_info())
-        self.runtime.publish(name, logged)
-
-    def _base_event_info(self):
-        """
-        Return a dictionary containing information that belongs on any logged
-        events.
-        """
-        return {
-            'usage_key': six.text_type(self.location)
-        }
-
     def allows_rescore(self):
         """
         Boolean value: Can this problem be rescored.
@@ -156,3 +129,36 @@ class ScorableXBlockMixin(object):
         Returns:
             Score(earned=float, total=float)
         """
+        raise NotImplementedError
+
+    def _base_event_info(self):
+        """
+        Return a dictionary containing information that belongs on any logged
+        events.
+        """
+        return {
+            'usage_key': six.text_type(self.location)
+        }
+
+    def _publish_grade(self, only_if_higher=None):
+        """
+        Publish a grade to the runtime.
+        """
+        score = self.get_score()
+        grade_dict = {
+            'value': score.earned,
+            'max_value': score.total,
+        }
+        if only_if_higher is not None:
+            grade_dict['only_if_higher'] = only_if_higher
+        self.runtime.publish('grade', grade_dict)
+
+    def _publish_scoring_event(self, name, data):
+        """
+        Publish an event related to scoring.
+        """
+        logged = {}  # Ensure we don't mutate our arguments
+        logged.update(data)
+        logged.update(self._base_event_info())
+        self.runtime.publish(name, logged)
+
