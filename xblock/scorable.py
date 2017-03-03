@@ -43,8 +43,8 @@ class ScorableXBlockMixin(object):
 
     def rescore(self, only_if_higher):
         """
-        Calculate a new score and save it to the block.  If only_if_higher is
-        True and the score didn't improve, keep the existing score.
+        Calculate a new raw score and save it to the block.  If only_if_higher
+        is True and the score didn't improve, keep the existing score.
 
         Returns True if the score was changed.
         Returns False if the score was not changed.
@@ -68,28 +68,17 @@ class ScorableXBlockMixin(object):
             self._publish_scoring_event('rescore_failure', {'failure': 'calculation error'})
             return False
 
-        if not only_if_higher or new_score > original_score:
-            self.set_score(new_score)
-            self._publish_grade(only_if_higher)
-            self._publish_scoring_event(
-                'rescore_result',
-                {
-                    'result': 'score updated',
-                    'original_score': original_score._asdict(),  # pylint: disable=protected-access
-                    'new_score': new_score._asdict(),  # pylint: disable=protected-access
-                }
-            )
-            return True
-        else:
-            self._publish_scoring_event(
-                'rescore_result',
-                {
-                    'result': 'score not changed',
-                    'original_score': original_score._asdict(),  # pylint: disable=protected-access
-                    'new_score': new_score._asdict(),  # pylint: disable=protected-access
-                }
-            )
-            return False
+        self.set_score(new_score)
+        self._publish_grade(only_if_higher)
+        self._publish_scoring_event(
+            'rescore_result',
+            {
+                'result': 'score updated',
+                'original_score': original_score._asdict(),  # pylint: disable=protected-access
+                'new_score': new_score._asdict(),  # pylint: disable=protected-access
+            }
+        )
+        return True
 
     def allows_rescore(self):
         """
@@ -99,7 +88,7 @@ class ScorableXBlockMixin(object):
 
     def get_score(self):
         """
-        Return a score already persisted on the XBlock.
+        Return a raw score already persisted on the XBlock.
 
         Returns:
             Score(earned=float, total=float)_
@@ -108,9 +97,9 @@ class ScorableXBlockMixin(object):
 
     def set_score(self, score):
         """
-        Persist a score to the XBlock.  The score is a named tuple with a
-        score attribute and a total, reflecting the earned score, and the
-        maximum the student could have earned.
+        Persist a score to the XBlock.  The score is a named tuple with a score
+        attribute and a total, reflecting the raw earned score, and the maximum
+        raw score the student could have earned.
 
         Arguments:
             score: Score(earned=float, total=float)
@@ -122,7 +111,7 @@ class ScorableXBlockMixin(object):
 
     def calculate_score(self):
         """
-        Calculate a new score based on the state of the problem.
+        Calculate a new raw score based on the state of the problem.
         This method should should not modify the state of the
         XBlock.
 
@@ -161,4 +150,3 @@ class ScorableXBlockMixin(object):
         logged.update(data)
         logged.update(self._base_event_info())
         self.runtime.publish(name, logged)
-
